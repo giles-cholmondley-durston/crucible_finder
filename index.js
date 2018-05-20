@@ -9,35 +9,59 @@ const T = new Twit({
   timeout_ms: 60 * 1000 // optional HTTP request timeout to apply to all requests.
 });
 
-const latestFriends = require("./leaders/18-05-08.json");
+const latestFriends = require("./leaders/18-05-20.json");
 
-const myTestFriends = [latestFriends[0], latestFriends[1]];
-
-for (const myFriend of myTestFriends) {
+const getFollowersOfOneLeader = async (myFriend, callback) => {
   let allIds = [];
 
-  T.get("followers/ids", { user_id: myFriend }, function getData(
+  T.get("followers/ids", { user_id: myFriend }, async function getData(
     err,
     data,
     response
   ) {
-    allIds = allIds.concat(data.ids);
-    console.log(allIds.length, data["next_cursor"], err);
+    allIds = await allIds.concat(data.ids);
+    console.log(allIds.length, data["next_cursor"], err && err);
 
-    setTimeout(() => {
+    await setTimeout(async () => {
       if (data["next_cursor"] > 0) {
         T.get(
           "followers/ids",
           { user_id: myFriend, cursor: data["next_cursor"] },
-          getData
+          await getData
         );
       } else {
-        fs.writeFile(
-          `followersOfMyLeaders/${myFriend}.json`,
-          JSON.stringify(allIds),
-          err => console.log(err)
-        );
+        return allIds;
       }
     }, 60000);
+
+    callback();
   });
+};
+
+const writeFollowersForId = (id, allIds) =>
+  fs.writeFile(`followersOfMyLeaders/${id}.json`, JSON.stringify(allIds), err =>
+    console.log(err)
+  );
+
+function getAllData(myTestFriends) {
+  // for (const myFriend of myTestFriends) {
+  //   const allIds = await getFollowersOfOneLeader(myFriend);
+  //   await writeFollowersForId(myFriend, allIds);
+  // }
+  function callFirstInArray() {
+    var myFriend = myTestFriends.shift(); //removes the first from the array, and stores in variable 'url'
+    console.log(myFriend);
+
+    //do ajax work, and set callback function:
+    getFollowersOfOneLeader(myFriend, function() {
+      if (myTestFriends.length > 0) {
+        //callback
+        callFirstInArray();
+      }
+    });
+  }
+  callFirstInArray();
 }
+
+const myTestFriends = [latestFriends[0], latestFriends[1]];
+getAllData(myTestFriends);
