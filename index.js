@@ -1,5 +1,7 @@
 const Twit = require("twit");
 const fs = require("fs");
+const moment = require("moment");
+const Queue = require("sync-queue");
 
 const T = new Twit({
   consumer_key: "FhTsujlJm8kwcG0xWVtfbA",
@@ -9,9 +11,11 @@ const T = new Twit({
   timeout_ms: 60 * 1000 // optional HTTP request timeout to apply to all requests.
 });
 
+const dateLabel = moment().format("YY-MM-DD");
+
 const latestFriends = require("./leaders/18-05-20.json");
 
-const getFollowersOfOneLeader = async (myFriend, callback) => {
+const getFollowersOfOneLeader = async myFriend => {
   let allIds = [];
 
   T.get("followers/ids", { user_id: myFriend }, async function getData(
@@ -20,7 +24,8 @@ const getFollowersOfOneLeader = async (myFriend, callback) => {
     response
   ) {
     allIds = await allIds.concat(data.ids);
-    console.log(allIds.length, data["next_cursor"], err && err);
+    // Log how many friends you need to get through
+    console.log(allIds.length, data["next_cursor"], err && err, queue);
 
     await setTimeout(async () => {
       if (data["next_cursor"] > 0) {
@@ -30,38 +35,31 @@ const getFollowersOfOneLeader = async (myFriend, callback) => {
           await getData
         );
       } else {
-        return allIds;
+        await writeFollowersForId(myFriend, allIds);
+        queue.next();
       }
     }, 60000);
 
-    callback();
+    return allIds;
   });
 };
 
-const writeFollowersForId = (id, allIds) =>
-  fs.writeFile(`followersOfMyLeaders/${id}.json`, JSON.stringify(allIds), err =>
+const writeFollowersForId = (id, allIds) => {
+  const dir = `followersOfMyLeaders/${dateLabel}`;
+
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+
+  fs.writeFile(`${dir}/${id}.json`, JSON.stringify(allIds), err =>
     console.log(err)
   );
+};
 
-function getAllData(myTestFriends) {
-  // for (const myFriend of myTestFriends) {
-  //   const allIds = await getFollowersOfOneLeader(myFriend);
-  //   await writeFollowersForId(myFriend, allIds);
-  // }
-  function callFirstInArray() {
-    var myFriend = myTestFriends.shift(); //removes the first from the array, and stores in variable 'url'
-    console.log(myFriend);
+const queue = new Queue();
 
-    //do ajax work, and set callback function:
-    getFollowersOfOneLeader(myFriend, function() {
-      if (myTestFriends.length > 0) {
-        //callback
-        callFirstInArray();
-      }
-    });
-  }
-  callFirstInArray();
+for (const myFriend of latestFriends) {
+  queue.place(() => {
+    getFollowersOfOneLeader(myFriend);
+  });
 }
-
-const myTestFriends = [latestFriends[0], latestFriends[1]];
-getAllData(myTestFriends);

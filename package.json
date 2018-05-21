@@ -15,6 +15,7 @@
     "fs": "0.0.1-security",
     "moment": "^2.22.1",
     "oauth": "^0.9.15",
+    "sync-queue": "0.0.2",
     "twit": "^2.2.9"
   }
 }
