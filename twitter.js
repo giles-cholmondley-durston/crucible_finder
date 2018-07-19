@@ -1,11 +1,11 @@
-var Twit = require("twit");
+const Twit = require('twit');
 
-var T = new Twit({
-  consumer_key: "FhTsujlJm8kwcG0xWVtfbA",
-  consumer_secret: "2dMNkiZj7jSAAbqaL4DQ1NwrrL8Bq6AenZWhhFuDvk",
-  access_token: "385420977-4PHHrmEPqZHz7sntKUlG6IcL28vzCB4TvVumwEz6",
-  access_token_secret: "TSn5pUOg8DlSgBt8LqeSZDPXrS43g4XzG8ypgDFfjwBYz",
-  timeout_ms: 60 * 1000 // optional HTTP request timeout to apply to all requests.
+const T = new Twit({
+  consumer_key: 'FhTsujlJm8kwcG0xWVtfbA',
+  consumer_secret: '2dMNkiZj7jSAAbqaL4DQ1NwrrL8Bq6AenZWhhFuDvk',
+  access_token: '385420977-4PHHrmEPqZHz7sntKUlG6IcL28vzCB4TvVumwEz6',
+  access_token_secret: 'TSn5pUOg8DlSgBt8LqeSZDPXrS43g4XzG8ypgDFfjwBYz',
+  timeout_ms: 60 * 1000, // optional HTTP request timeout to apply to all requests.
 });
 
 const myFriends = [
@@ -94,13 +94,11 @@ const myFriends = [
   10079052,
   2178012643,
   2529971,
-  1236101
+  1236101,
 ];
 
-myFriends.map(
-  (friend, i) =>
-    i === 1 &&
-    T.get("followers/ids", { user_id: friend }, function(err, data, response) {
+myFriends.map((friend, i) =>
+  i === 1 &&
+    T.get('followers/ids', { user_id: friend }, (err, data, response) => {
       console.log(data);
-    })
-);
+    }));

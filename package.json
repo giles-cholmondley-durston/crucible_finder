@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-eslint": "^8.2.5",
     "dstools": "^0.2.8",
     "dstwitter": "^0.1.3",
     "eslint": "^4.19.1",
