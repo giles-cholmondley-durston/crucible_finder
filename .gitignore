@@ -1,6 +1,6 @@
-node_modules
+/node_modules
 
-leaders
-followersOfMyLeaders
-manifest.json
-countedManifest.json
+/leaders
+/followersOfMyLeaders
+./manifest.json
+./countedManifest.json
